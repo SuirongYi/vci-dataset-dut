@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from math import sin, cos, acos, sqrt, pi
 import matplotlib.patches as patches
 from numpy import ndarray
-from DataClass import TrafficVeh, SurrData
+from DataClass import TrafficVeh, SurrData, SurrInfo
 from Model import TrafficParticipant, Model
 import matplotlib.pyplot as plt
 import copy
@@ -13,16 +13,15 @@ import csv
 import os
 import pandas as pd
 
-width = 1.6
-length = 3.8
+width = 1.5
+length = 3.5
 
 
 @dataclass
 class SurrInit:
-    # setting: Setting
     ped_data: Dict
-    traffic_vehs: Dict[str, TrafficVeh]
-    para_list: List
+    # traffic_vehs: Dict[str, TrafficVeh]
+    para_list: List             # 社会力参数列表
 
 
 @dataclass
@@ -37,28 +36,34 @@ class SurrResult:
 
 class Surrounding:
     def __init__(self, init: SurrInit):
-        # self.init = init
         self.ped_data = init.ped_data
         self.para_data = init.para_list
         self.traffic_info: Dict[str, TrafficVeh] = dict()
-        self.ego_veh = self.get_object(init.traffic_vehs)
-        self.ego_data: Dict[str, TrafficParticipant] = dict()
+        self.ego_veh: Dict[str, Dict] = dict()
+        # self.ego_veh = self.get_object(init.traffic_vehs)    # 从交通流中提取行人并初始化被控行人
+        self.ego_data: Dict[str, TrafficParticipant] = dict()  # 被控行人字典
         self.ego_list = list(self.ego_veh.keys())
-        for name in self.ego_list:
-            self.ego_data[name] = TrafficParticipant(**self.ego_veh[name], id=name)  # 被控对象初始化
+        # for name in self.ego_list:
+        #     self.ego_data[name] = TrafficParticipant(**self.ego_veh[name], id=name)  # 被控对象初始化
         self.model = Model(tau=0.03)
         self.all_object_result: SurrData = SurrData()
 
     def update(self, update: SurrUpdate) -> SurrResult:
         self.reset()
+        # self.del_participant()              # 删除到达终点的行人
         for name, veh in update.traffic_vehs.items():
             if veh.type in ('pedestrian', 'bicycle') and name not in self.ego_list:
                 self.add_participant(veh)
+
+        # 修改
+        # print(f'被控行人列表：{self.ego_list}')
+
         self.traffic_info = copy.deepcopy(update.traffic_vehs)
         for obj in self.ego_data.values():
+            obj.reset()
             self.update_sur_veh(obj)
             update_target_point(obj)
-        self.del_participant()
+        # self.del_participant()  # 删除到达终点的行人
         self.model.control_object = self.ego_data
         self.all_object_result.ped = self.model.update()
 
@@ -78,39 +83,49 @@ class Surrounding:
     def reset(self):
         self.all_object_result.reset()
 
-    def get_object(self, traffic: Dict[str, TrafficVeh]) -> Dict[str, Dict]:
-        control_object = dict()
-        for name, tp in traffic.items():
-            if tp.id[0] == 'v':
-                continue
-            control_object[name] = dict(type=tp.type, original_x=tp.x, original_y=tp.y, u=tp.u,
-                                        phi=tp.phi, target_points=np.array([self.ped_data[name]['end_xy']]),
-                                        adjust_time=0.95, view_radius=10.0, view_angle=2 * pi,
-                                        A_sur=self.para_data[0], B_sur=self.para_data[1],
-                                        A_veh=self.para_data[2], B_veh=self.para_data[3],
-                                        r_x_max=4.50, pre_horizon=0.6
-                                        )
-        return control_object
+    # def get_object(self, traffic: Dict[str, TrafficVeh]) -> Dict[str, Dict]:
+    #     control_object = dict()
+    #     for name, tp in traffic.items():
+    #         if tp.id[0] == 'v':
+    #             continue
+    #         control_object[name] = dict(type=tp.type, original_x=tp.x, original_y=tp.y, u=tp.u,
+    #                                     phi=tp.phi, target_points=np.array([self.ped_data[name]['end_point']]),
+    #                                     adjust_time=0.65, view_radius=8.0, view_angle=2*pi/3,
+    #                                     A_sur=self.para_data[0], B_sur=self.para_data[1],
+    #                                     A_veh=self.para_data[2], B_veh=self.para_data[3],
+    #                                     r_x_max=5.8, pre_horizon=1.0
+    #                                     )
+    #     return control_object
 
     def add_participant(self, obj: TrafficVeh):
         self.ego_list.append(obj.id)
         self.ego_data[obj.id] = TrafficParticipant(id=obj.id, type=obj.type, original_x=obj.x, original_y=obj.y,
                                                    u=obj.u, phi=obj.phi,
-                                                   target_points=np.array([self.ped_data[obj.id]['end_xy']]),
-                                                   adjust_time=0.95, view_radius=10.0, view_angle=2 * pi,
+                                                   target_points=np.array([self.ped_data[obj.id]['end_point']]),
+                                                   adjust_time=0.65, view_radius=8.0, view_angle=2*pi/3,
                                                    A_sur=self.para_data[0], B_sur=self.para_data[1],
                                                    A_veh=self.para_data[2], B_veh=self.para_data[3],
-                                                   r_x_max=4.50, pre_horizon=0.6
+                                                   r_x_max=5.8, pre_horizon=1.0
                                                    )
 
-    def del_participant(self):
-        del_list = []
-        for name, obj in self.ego_data.items():
-            distance = np.linalg.norm(obj.target_point[:2] - np.array([obj.x, obj.y]))
-            if distance <= 0.1:
-                del_list.append(name)
-        self.ego_list = [i for i in self.ego_list if i not in del_list]
-        self.ego_data = {k: v for k, v in self.ego_data.items() if k in self.ego_list}
+    # def del_participant(self):
+    #     del_list = []
+    #     for name, obj in self.ego_data.items():
+    #         distance = np.linalg.norm(obj.target_point[:2] - np.array([obj.x, obj.y]))
+    #         if distance <= 0.1:
+    #             del_list.append(name)
+    #     self.ego_list = [i for i in self.ego_list if i not in del_list]
+    #     self.ego_data = {k: v for k, v in self.ego_data.items() if k in self.ego_list}
+    #     if del_list:
+    #         print(f'被删的行人列表为：{del_list}')
+
+    def del_participant(self, obj: SurrInfo):
+        distance = np.linalg.norm(self.ego_data[obj.id].target_point[:2] - np.array([obj.x, obj.y]))
+        if distance <= 0.8:
+            self.ego_list = [i for i in self.ego_list if i != obj.id]
+            self.ego_data = {k: v for k, v in self.ego_data.items() if k in self.ego_list}
+            # 修改
+            # print(f'被删的行人列表为：{obj.id}')
 
 
 def update_target_point(obj: TrafficParticipant):
@@ -135,7 +150,7 @@ def select(obj: TrafficParticipant, point: ndarray) -> bool:
     d_vector = point - ego_position
     distances = np.linalg.norm(d_vector)
     ego_v = np.array([cos(obj.phi), sin(obj.phi)])
-    theta = acos(np.clip(ego_v.dot(d_vector) / distances,-1, 1))
+    theta = acos(np.clip(ego_v.dot(d_vector) / distances, -1, 1))
     if distances <= obj.view_radius and theta <= obj.view_angle / 2:
         return True
     else:
@@ -171,8 +186,13 @@ def get_ped_data(data_path: str, ) -> Tuple[Dict, Dict, Dict]:
                 ped_xy['ped' + row['id']]['u'].append(sqrt(float(row['vx_est']) ** 2 + float(row['vy_est']) ** 2))
                 ped_xy['ped' + row['id']]['phi'].append(np.arctan2(float(row['vy_est']), float(row['vx_est'])))
     for name, xy in ped_xy.items():
+        star_xy = np.array([float(xy['x'][0]), float(xy['y'][0])])
+        end_xy = np.array([float(xy['x'][-1]), float(xy['y'][-1])])
+        vector = 0.0 * (end_xy - star_xy) / np.linalg.norm(star_xy - end_xy)
+        end_point = vector + end_xy
         pedestrian[name] = dict(star_xy=[float(xy['x'][0]), float(xy['y'][0])],
                                 end_xy=[float(xy['x'][-1]), float(xy['y'][-1]), 1.80],
+                                end_point=[end_point[0], end_point[1], 1.80],
                                 star_u=xy['u'][0],
                                 star_phi=xy['phi'][0])
     ped_frame = dict()
@@ -294,11 +314,11 @@ if __name__ == "__main__":
     # data = simulation_data(ped_file_path, veh_file_path, [0.68, 0.07, 4.4, 3.09])
     # print(data)
     # [0.85, 1.95, 3.50, 0.40]
-    ped_list, ped_data, test = get_ped_data(ped_file_path)
-    veh_data = get_veh_data(veh_file_path)
+    ped_list, ped_data, test = get_ped_data(ped_file_path)   # 每一帧出现的行人/行人的初始状态和目标点/出现新的行人的帧及行人id
+    veh_data = get_veh_data(veh_file_path)    # 每一帧出现的车辆及其位置状态
     simulation_step = len(ped_list)
     traffic_vehs = dict()
-    sur_init = SurrInit(ped_data=ped_data, traffic_vehs=traffic_vehs, para_list=[0.85, 1.95, 3.50, 0.40])
+    sur_init = SurrInit(ped_data=ped_data, para_list=[0.85, 1.95, 3.50, 0.40])
     sur = Surrounding(init=sur_init)
     t = list()
     v_data = []
@@ -306,6 +326,7 @@ if __name__ == "__main__":
 
     plot_ped_data = {i: [] for i in range(1, simulation_step + 1)}
     for i in range(1, simulation_step + 1):
+        print(f'第{i}/{simulation_step + 1}')
         veh_frame = len(veh_data)
         if i < veh_frame + 1:
             for n, v in veh_data[i].items():
@@ -333,6 +354,14 @@ if __name__ == "__main__":
             sur.ego_data[ped.id].history_y.append(ped.y)
             sur.ego_data[ped.id].history_u.append(ped.u)
             sur.ego_data[ped.id].history_phi.append(ped.phi)
+            sur.del_participant(ped)
+        # ped2 = 'ped19'
+        # print(f'ped19:{sur.ego_data[ped2].x}, {sur.ego_data[ped2].y}, {sur.ego_data[ped2].u}, {sur.ego_data[ped2].target_point[:2]}')
+        # print(np.linalg.norm(np.array([sur.ego_data[ped2].x, sur.ego_data[ped2].y]) - sur.ego_data[ped2].target_point[:2]))
+        # print('sur_veh', sur.ego_data[ped2].sur_vehicle)
+        # print('sur_ped', sur.ego_data[ped2].sur_ped_bic)
+        # print('a_norm', sur.ego_data[ped2].a_norm)
+        # print('ref_a', sur.ego_data[ped2].r_a)
         traffic_vehs.clear()
         t2 = time.time()
         t.append(t2 - t1)
@@ -371,7 +400,7 @@ if __name__ == "__main__":
         for i in range(1, len(plot_ped_data) + 1):
             plt.cla()
             for ped in plot_ped_data[i]:
-                circle = patches.Circle(xy=(ped[0], ped[1]), radius=0.15, fc='red', ec='red', zorder=3)
+                circle = patches.Circle(xy=(ped[0], ped[1]), radius=0.20, fc='red', ec='red', zorder=3)
                 ax.add_patch(circle)
             if i in list(plot_veh_data.keys()):
                 for veh in plot_veh_data.get(i):

@@ -27,17 +27,17 @@ class TrafficParticipant(TrafficVeh):
     r_self_force: ndarray = np.array([0.0, 0.0])  # 驱动力
     r_sur_force: ndarray = np.array([0.0, 0.0])  # 周围行人/非机动车对被控对象的社会力
     r_veh_force: ndarray = np.array([0.0, 0.0])  # 车辆对被控对象的社会力
-    r_x_max: float = 8.0  # 最大横向偏移距离
+    r_x_max: float = 5.5  # 最大横向偏移距离
     r_target: ndarray = np.array([0.0, 0.0])  # 当前时刻目标点在目标点坐标系下的坐标
 
     veh_lat_force: List = field(default_factory=list)  # 车辆横向社会力集合
     veh_lon_force: List = field(default_factory=list)  # 车辆纵向社会力集合
-    max_veh_force: float = 3.0  # 最大车辆社会力数值
+    max_veh_force: float = 2.5  # 最大车辆社会力数值
     max_veh_lat_force: float = 0.0  # 当前时刻最大车辆横向社会力
     max_veh_lon_force: float = 0.0  # 当前时刻最大车辆纵向社会力
-    sensitive_distance: float = 2.5  # 与车辆外轮廓的横向敏感距离，用于计算车辆横向社会力
-    delta: float = 1.0  # 与车辆外轮廓的纵向敏感距离，用于计算车辆纵向社会力
-    radius: float = 0.25  # 被控对象圆半径
+    sensitive_distance: float = 1.5  # 与车辆外轮廓的横向敏感距离，用于计算车辆横向社会力
+    delta: float = 0.0  # 与车辆外轮廓的纵向敏感距离，用于计算车辆纵向社会力
+    radius: float = 0.20  # 被控对象圆半径
     original_x: float = 0.0  # 目标点坐标系在大地坐标系下的横坐标
     original_y: float = 0.0  # 目标点坐标系在大地坐标系下的纵坐标
     original_phi_y: float = 0.0  # 目标点坐标系在大地坐标系下的y轴角度
@@ -48,7 +48,8 @@ class TrafficParticipant(TrafficVeh):
     size: int = 0  # 目标点集的大小
     v: ndarray = np.array([0.0, 0.0])  # 大地坐标系下的速度
     a: float = 0.0  # 大地坐标系下的加速度
-    a_norm: ndarray = np.array([0.0, 0.0])  # 加速度的数值大小
+    # a_norm: ndarray = np.array([0.0, 0.0])  # 加速度的数值大小
+    a_norm: float = 0.0  # 加速度的数值大小
     u_max: float = 0.0  # 最大速度
     a_max: float = 1.5  # 最大加速度
     target_point: ndarray = np.array([0.0, 0.0])  # 当前阶段的目标点
@@ -85,8 +86,8 @@ class TrafficParticipant(TrafficVeh):
 
     def __post_init__(self):
         if self.type == 'pedestrian':
-            self.u_max = 3.00
-            self.a_max = 1.65
+            self.u_max = 1.65
+            self.a_max = 2.50
         elif self.type == 'bicycle':
             self.u_max = 2.0
             self.a_max = 1.8
@@ -161,7 +162,7 @@ class Model:
     def update(self) -> List[SurrInfo]:
         objet_list = list()
         for name, obj in self.control_object.items():
-            calculate_veh_force(obj, obj.pre_horizon)
+            calculate_veh_force(obj)
             calculate_self_force(obj)
             calculate_sur_force(obj, self.tau)
             obj.set_r_sum_force()
@@ -186,7 +187,11 @@ class Model:
             obj_x, obj_y, obj_phi = translate_and_rotate(r_next_x, r_next_y, next_phi, obj.geodetic_x, obj.geodetic_y,
                                                          obj.geodetic_phi)
             obj.history_a.append(obj.a_norm)
-            obj.reset()
+            # if name == 'ped19':
+            #     print('sur_force', obj.r_sur_force)
+            #     print('veh_force', obj.r_veh_force)
+            #     print('self_force', obj.r_self_force)
+            # obj.reset()  # 修改
             objet_list.append(SurrInfo(id=name, x=obj_x, y=obj_y, u=np.linalg.norm(next_v), phi=obj_phi))
         return objet_list
 
@@ -194,8 +199,8 @@ class Model:
         self.control_object.clear()
 
 
-def calculate_veh_force(obj: TrafficParticipant, t: float):
-    veh_in_new_coordinate(obj, t)  # 将车辆位置转换为参考点坐标系下位置
+def calculate_veh_force(obj: TrafficParticipant):
+    veh_in_new_coordinate(obj)  # 将车辆位置转换为参考点坐标系下位置
     number = len(obj.sur_vehicle)
     if number == 0:
         pass
@@ -249,7 +254,7 @@ def calculate_self_force(obj: TrafficParticipant):
     else:
         if fabs(obj.max_veh_lat_force) > 0.00:
             lat_self_force = np.array([0.0, 0.0])
-            if copysign(1, obj.max_veh_lon_force) == -1 and fabs(obj.max_veh_lon_force) >= 0.99:  # todo
+            if copysign(1, obj.max_veh_lon_force) == -1 and fabs(obj.max_veh_lon_force) >= 1.0:  # todo
                 obj.update(r_self_force=np.array([0, -2.5]) + lat_self_force)
             else:
                 obj.update(r_self_force=lon_self_force + lat_self_force)
@@ -270,7 +275,7 @@ def update_veh_force(obj: TrafficParticipant):
             lat_factor = 1.0
         else:
             lat_factor = -1.0
-        low = -max(3.0, veh_.width) - veh_.width
+        low = -max(1.5, veh_.width / 2) - veh_.width / 2       # todo 与车辆外轮廓距离，是固定值还是与车辆宽有关？
         if fabs(trans_x) <= veh_.length / 2:
             value_factor = 1.0
         elif veh_.length / 2 < fabs(trans_x) <= veh_.length / 2 + obj.sensitive_distance:
@@ -282,7 +287,7 @@ def update_veh_force(obj: TrafficParticipant):
                 delta_d_x = fabs(trans_x) - veh_.length / 2
             else:
                 delta_d_x = fabs(trans_x) - (trans_y - low) * veh_.length / (-veh_.width - 2 * low)
-            lat_magnitude_ = min(obj.A_veh * exp(-obj.B_veh * delta_d_x), obj.max_veh_force) * lat_factor * value_factor
+            lat_magnitude_ = min(obj.A_veh * exp(-obj.B_veh * (delta_d_x - obj.radius)), obj.max_veh_force) * lat_factor * value_factor
         else:
             lat_magnitude_ = 0.0
         # delta = 0.0
@@ -294,7 +299,7 @@ def update_veh_force(obj: TrafficParticipant):
                 delta_d_y = fabs(trans_y) - veh_.width * ((veh_.length + 2 * obj.delta) - fabs(trans_x)) / (
                         4 * obj.delta)
             # lon_magnitude_ = obj.A_veh * exp(-obj.B_veh * delta_d_y) * lon_factor
-            lon_magnitude_ = min(obj.A_veh * exp(-obj.B_veh * delta_d_y), obj.max_veh_force) * lon_factor
+            lon_magnitude_ = min(obj.A_veh * exp(-obj.B_veh * (delta_d_y - obj.radius)), obj.max_veh_force) * lon_factor
         else:
             lon_magnitude_ = 0.0
         obj.veh_lat_force.append(lat_magnitude_)
@@ -302,13 +307,13 @@ def update_veh_force(obj: TrafficParticipant):
     obj.set_veh_force()
 
 
-def veh_in_new_coordinate(obj: TrafficParticipant, t: float):
+def veh_in_new_coordinate(obj: TrafficParticipant):
     """将车辆坐标转化为目标点坐标系下坐标"""
     for veh in obj.sur_vehicle:
         trans_x, trans_y, trans_phi = translate_and_rotate(veh.x, veh.y, veh.phi, obj.original_x,
                                                            obj.original_y, obj.original_phi_x)
-        pre_trans_x = trans_x + veh.u * cos(trans_phi) * t
-        pre_trans_y = trans_y + veh.u * sin(trans_phi) * t
+        pre_trans_x = trans_x + veh.u * cos(trans_phi) * obj.pre_horizon
+        pre_trans_y = trans_y + veh.u * sin(trans_phi) * obj.pre_horizon
         x_min = np.min(np.array([get_veh_boundary(TrafficVeh(x=trans_x, y=trans_y, phi=trans_phi, length=veh.length,
                                                              width=veh.width))[0] +
                                  get_veh_boundary(TrafficVeh(x=pre_trans_x, y=pre_trans_y, phi=trans_phi,

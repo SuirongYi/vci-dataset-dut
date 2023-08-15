@@ -6,8 +6,8 @@ import csv
 import os
 import pandas as pd
 
-width = 1.6
-length = 3.8
+width = 1.50
+length = 3.70
 
 
 def plot_vehicle(x, y, phi):
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     for i in range(1, len(ped_data) + 1):
         plt.cla()
         for ped in ped_data[i]:
-            circle = patches.Circle(xy=(ped[0], ped[1]), radius=0.15, fc='red', ec='red', zorder=3)
+            circle = patches.Circle(xy=(ped[0], ped[1]), radius=0.20, fc='red', ec='red', zorder=3)
             ax.add_patch(circle)
         if i in list(veh_data.keys()):
             for veh in veh_data.get(i):
