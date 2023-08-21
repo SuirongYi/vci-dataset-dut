@@ -21,7 +21,7 @@ length = 3.5
 class SurrInit:
     ped_data: Dict
     # traffic_vehs: Dict[str, TrafficVeh]
-    para_list: List             # 社会力参数列表
+    para_list: List  # 社会力参数列表
 
 
 @dataclass
@@ -101,11 +101,11 @@ class Surrounding:
         self.ego_list.append(obj.id)
         self.ego_data[obj.id] = TrafficParticipant(id=obj.id, type=obj.type, original_x=obj.x, original_y=obj.y,
                                                    u=obj.u, phi=obj.phi,
-                                                   target_points=np.array([self.ped_data[obj.id]['end_point']]),
-                                                   adjust_time=0.65, view_radius=8.0, view_angle=2*pi/3,
+                                                   target_points=np.array(self.ped_data[obj.id]['end_point']),
+                                                   adjust_time=0.40, view_radius=11.0, view_angle=2 * pi / 3,
                                                    A_sur=self.para_data[0], B_sur=self.para_data[1],
                                                    A_veh=self.para_data[2], B_veh=self.para_data[3],
-                                                   r_x_max=5.8, pre_horizon=1.0
+                                                   r_x_max=100, pre_horizon=1.5
                                                    )
 
     # def del_participant(self):
@@ -190,11 +190,17 @@ def get_ped_data(data_path: str, ) -> Tuple[Dict, Dict, Dict]:
         end_xy = np.array([float(xy['x'][-1]), float(xy['y'][-1])])
         vector = 0.0 * (end_xy - star_xy) / np.linalg.norm(star_xy - end_xy)
         end_point = vector + end_xy
+        if name in ('ped890', 'ped900'):
+            end_point_ = [[19.00, 9.50, 1.80],
+                          [end_point[0], end_point[1], 1.80]]
+        else:
+            end_point_ = [[end_point[0], end_point[1], 1.65]]
         pedestrian[name] = dict(star_xy=[float(xy['x'][0]), float(xy['y'][0])],
                                 end_xy=[float(xy['x'][-1]), float(xy['y'][-1]), 1.80],
-                                end_point=[end_point[0], end_point[1], 1.80],
+                                end_point=end_point_,
                                 star_u=xy['u'][0],
                                 star_phi=xy['phi'][0])
+
     ped_frame = dict()
     for name, frame in test_ped_data.items():
         if frame[0] not in ped_frame.keys():
@@ -213,6 +219,7 @@ def get_veh_data(data_path: str) -> Dict:
     with open(data_path, 'r') as file:
         reader = csv.DictReader(file)
         for row in reader:
+            # if 'veh' + row['id'] == 'veh2': continue
             veh_dict[int(row['frame'])]['veh' + row['id']] = [float(row['x_est']), float(row['y_est']),
                                                               float(row['psi_est']), float(row['vel_est'])]
     return veh_dict
@@ -241,6 +248,7 @@ def plot_veh_data(data_path: str, ) -> Dict:
     with open(data_path, 'r') as file:
         reader = csv.DictReader(file)
         for row in reader:
+            # if 'veh' + row['id'] == 'veh2': continue
             if row['label'] == 'ped':
                 temp[int(row['frame'])].append([float(row['x_est']), float(row['y_est'])])
             else:
@@ -265,7 +273,7 @@ def simulation_data(ped_path: str, veh_path: str, para_list: List) -> np.ndarray
     veh_data = get_veh_data(veh_path)
     simulation_step = len(ped_list)
     traffic_vehs = dict()
-    sur_init = SurrInit(ped_data=ped_data, traffic_vehs=traffic_vehs, para_list=para_list)
+    sur_init = SurrInit(ped_data=ped_data, para_list=para_list)
     sur = Surrounding(init=sur_init)
     v_data = []
     plot_ped_data = {i: [] for i in range(1, simulation_step + 1)}
@@ -300,22 +308,22 @@ def simulation_data(ped_path: str, veh_path: str, para_list: List) -> np.ndarray
     interval_width = (3.5 - 0.0) / 50
     interval_bins = np.arange(0.0, 3.5 + interval_width, interval_width)
     hist, bins = np.histogram(v_data, bins=interval_bins)
-    return hist/len(v_data)
+    return hist / len(v_data)
 
 
 if __name__ == "__main__":
     path = os.path.dirname(os.path.abspath(__file__))
     path = os.path.dirname(path)
-    ped_csv_file = 'data\\trajectories_filtered\\intersection_04_traj_ped_filtered.csv'
-    veh_csv_file = 'data\\trajectories_filtered\\intersection_04_traj_veh_filtered.csv'
+    ped_csv_file = 'data\\trajectories_filtered\\intersection_05_traj_ped_filtered.csv'
+    veh_csv_file = 'data\\trajectories_filtered\\intersection_05_traj_veh_filtered.csv'
     ped_file_path = os.path.join(path, ped_csv_file)
     veh_file_path = os.path.join(path, veh_csv_file)
 
     # data = simulation_data(ped_file_path, veh_file_path, [0.68, 0.07, 4.4, 3.09])
     # print(data)
     # [0.85, 1.95, 3.50, 0.40]
-    ped_list, ped_data, test = get_ped_data(ped_file_path)   # 每一帧出现的行人/行人的初始状态和目标点/出现新的行人的帧及行人id
-    veh_data = get_veh_data(veh_file_path)    # 每一帧出现的车辆及其位置状态
+    ped_list, ped_data, test = get_ped_data(ped_file_path)  # 每一帧出现的行人/行人的初始状态和目标点/出现新的行人的帧及行人id
+    veh_data = get_veh_data(veh_file_path)  # 每一帧出现的车辆及其位置状态
     simulation_step = len(ped_list)
     traffic_vehs = dict()
     sur_init = SurrInit(ped_data=ped_data, para_list=[0.85, 1.95, 3.50, 0.40])
@@ -331,12 +339,14 @@ if __name__ == "__main__":
         if i < veh_frame + 1:
             for n, v in veh_data[i].items():
                 traffic_vehs[n] = TrafficVeh(id=n, type='vehicle', x=v[0], y=v[1], phi=v[2],
-                                             u=v[3], length=3.8, width=1.6)
+                                             u=v[3], length=3.5, width=1.5)
         for n, p in sur.ego_data.items():
             traffic_vehs[n] = TrafficVeh(id=n, type='pedestrian', x=p.x, y=p.y, phi=p.phi,
                                          u=p.u)
         if i in list(test.keys()):
+        # if i == 360:
             for p in test[i]:
+                # if p == 'ped90':
                 if p not in sur.ego_list:
                     traffic_vehs[p] = TrafficVeh(id=p, type='pedestrian', x=ped_data[p]['star_xy'][0],
                                                  y=ped_data[p]['star_xy'][1], phi=ped_data[p]['star_phi'],
@@ -355,6 +365,18 @@ if __name__ == "__main__":
             sur.ego_data[ped.id].history_u.append(ped.u)
             sur.ego_data[ped.id].history_phi.append(ped.phi)
             sur.del_participant(ped)
+        # if sur.ego_list:
+        #     print(sur.ego_data['ped90'].target_points)
+        #     print('sur_veh', sur.ego_data['ped90'].sur_vehicle)
+        #     # print('sur_ped', sur.ego_data['ped90'].sur_ped_bic)
+        #     print('lat_veh_force', sur.ego_data['ped90'].max_veh_lat_force)
+        #     print('lon_veh_force', sur.ego_data['ped90'].max_veh_lon_force)
+        #     print('r_veh_force', sur.ego_data['ped90'].r_veh_force)
+        #     print('r_self_force', sur.ego_data['ped90'].r_self_force)
+        #     print('a_norm', sur.ego_data['ped90'].a_norm)
+        #     print('ref_a', sur.ego_data['ped90'].r_a)
+        #     print('u', sur.ego_data['ped90'].u)
+        #     print('-----------------------------------------------')
         # ped2 = 'ped19'
         # print(f'ped19:{sur.ego_data[ped2].x}, {sur.ego_data[ped2].y}, {sur.ego_data[ped2].u}, {sur.ego_data[ped2].target_point[:2]}')
         # print(np.linalg.norm(np.array([sur.ego_data[ped2].x, sur.ego_data[ped2].y]) - sur.ego_data[ped2].target_point[:2]))
@@ -365,33 +387,6 @@ if __name__ == "__main__":
         traffic_vehs.clear()
         t2 = time.time()
         t.append(t2 - t1)
-    # print(np.mean(np.array(t)))
-    # print(v_data)
-
-    # plot = PlotDate(traffic_dict=traffic_vehs, control_obj=sur.ego_data, step=simulation_step)
-    # dp = DynamicPlot(plot)
-    # ped0 = sur.ego_data['bic0']
-    # fig, axes = plt.subplots(nrows=2, ncols=2)
-    # axes[0, 0].plot(ped0.history_a)
-    # axes[0, 0].set_title('a')
-    # axes[0, 1].plot(ped0.history_x, ped0.history_y)
-    # axes[0, 1].axis('equal')
-    # axes[0, 1].set_title('position')
-    # axes[1, 0].plot(ped0.history_u)
-    # axes[1, 0].set_title('u')
-    # axes[1, 1].plot(ped0.history_phi)
-    # axes[1, 1].set_title('phi')
-    # fig = plt.figure()
-    # ax = fig.add_subplot()
-    # ax.axis('equal')
-    # ax.set_title('trajectory')
-    # ax.set_xlabel('x')
-    # ax.set_ylabel('y')
-    # for tp in sur.ego_data.values():
-    #     ax.plot(tp.history_x, tp.history_y, 'r')
-    # plt.show()
-    # print(plot_ped_data)
-
     if if_plot:
         plot_veh_data = plot_veh_data(veh_file_path)
         fig = plt.figure(figsize=(10, 8))
@@ -399,6 +394,8 @@ if __name__ == "__main__":
         ax = fig.add_subplot()
         for i in range(1, len(plot_ped_data) + 1):
             plt.cla()
+            # ax.plot([14.665, 19], [2.100, 9.5])
+            # ax.plot([19, 22.655], [9.5, 9.962])
             for ped in plot_ped_data[i]:
                 circle = patches.Circle(xy=(ped[0], ped[1]), radius=0.20, fc='red', ec='red', zorder=3)
                 ax.add_patch(circle)

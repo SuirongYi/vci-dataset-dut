@@ -51,14 +51,14 @@ class TrafficParticipant(TrafficVeh):
     # a_norm: ndarray = np.array([0.0, 0.0])  # 加速度的数值大小
     a_norm: float = 0.0  # 加速度的数值大小
     u_max: float = 0.0  # 最大速度
-    a_max: float = 1.5  # 最大加速度
+    a_max: float = 1.50  # 最大加速度
     target_point: ndarray = np.array([0.0, 0.0])  # 当前阶段的目标点
     desired_u: float = 0.0  # 目标速度
     adjust_time: float = 0.55  # 调整时间
     view_radius: float = 0.0  # 可视域半径（/m）
     view_angle: float = 0.0  # 可视域角度（/rad）
     pre_horizon: float = 3.0  # 车辆预测时域
-    vehicle_interval: float = 1.5  # 车辆横纵向边界小于1.5视为一辆车
+    vehicle_interval: float = 0.0  # 车辆横纵向边界小于1.5视为一辆车
 
     # 大地坐标系在目标点坐标系下的坐标值
     geodetic_x: float = 0.0
@@ -86,8 +86,8 @@ class TrafficParticipant(TrafficVeh):
 
     def __post_init__(self):
         if self.type == 'pedestrian':
-            self.u_max = 1.65
-            self.a_max = 2.50
+            self.u_max = 3.50
+            self.a_max = 3.00
         elif self.type == 'bicycle':
             self.u_max = 2.0
             self.a_max = 1.8
@@ -276,6 +276,7 @@ def update_veh_force(obj: TrafficParticipant):
         else:
             lat_factor = -1.0
         low = -max(1.5, veh_.width / 2) - veh_.width / 2       # todo 与车辆外轮廓距离，是固定值还是与车辆宽有关？
+        # low = -veh_.width       # todo 与车辆外轮廓距离，是固定值还是与车辆宽有关？
         if fabs(trans_x) <= veh_.length / 2:
             value_factor = 1.0
         elif veh_.length / 2 < fabs(trans_x) <= veh_.length / 2 + obj.sensitive_distance:

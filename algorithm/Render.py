@@ -44,8 +44,8 @@ def get_ped_data(data_path: str, ) -> Dict:
 if __name__ == "__main__":
     path = os.path.dirname(os.path.abspath(__file__))
     path = os.path.dirname(path)
-    ped_csv_file = 'data\\trajectories_filtered\\intersection_04_traj_ped_filtered.csv'
-    veh_csv_file = 'data\\trajectories_filtered\\intersection_04_traj_veh_filtered.csv'
+    ped_csv_file = 'data\\trajectories_filtered\\intersection_05_traj_ped_filtered.csv'
+    veh_csv_file = 'data\\trajectories_filtered\\intersection_05_traj_veh_filtered.csv'
     ped_data = get_ped_data(ped_csv_file)
     veh_data = get_ped_data(veh_csv_file)
     fig = plt.figure(figsize=(10, 8))
