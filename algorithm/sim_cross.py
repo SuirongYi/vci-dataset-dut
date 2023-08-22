@@ -9,6 +9,7 @@ from Model import TrafficParticipant, Model
 import matplotlib.pyplot as plt
 import copy
 import time
+import random
 
 width = 1.5
 length = 3.5
@@ -94,9 +95,11 @@ class Surrounding:
 def update_target_point(obj: TrafficParticipant):
     ego_position = np.array([obj.x, obj.y])
     d = np.linalg.norm(ego_position - obj.target_point)
-    if d <= 3.0:
+    if d <= 1.0:
         if obj.curr_index < obj.size - 1:
             # print('更新目标点')
+            # probability = random.random()
+            # if probability <= 0.2:
             obj.reset_original_point(obj.curr_index + 1)
 
 
@@ -136,7 +139,12 @@ def plot_vehicle(x, y, phi):
 
 
 if __name__ == "__main__":
-    ped_data = dict(ped0=dict(original_x=7.5, original_y=0.0, phi=0.0, u=0.0, target_points=np.array([[7.5, 20.0, 1.80]])),)
+    ped_data = dict(ped0=dict(original_x=15, original_y=3.0, phi=0.0, u=0.0,
+                              target_points=np.array([[8.0, 4.0, 1.70, 1]])),
+                    ped1=dict(original_x=1.0, original_y=3.0, phi=0.0, u=0.0,
+                              target_points=np.array([[7.0, 4.0, 1.70, 1],
+                                                      [7.5, 25.0, 1.80, 0]])),
+                    )
                     # ped1=dict(x=0.0, y=0.0, phi=0.0, u=0.0))
     simulation_step = 150
     traffic_vehs = dict()
@@ -151,6 +159,10 @@ if __name__ == "__main__":
             traffic_vehs[n] = TrafficVeh(id=n, type='pedestrian', x=p.x, y=p.y, phi=p.phi,
                                          u=p.u)
         t1 = time.time()
+        if i == 55:
+            sur.ego_data['ped0'].target_points = np.array([[8.0, 4.0, 1.70, 1],
+                                                           [7.9, 25.0, 1.80, 0]])
+            sur.ego_data['ped0'].size = 2
         sur_list = sur.update(update=SurrUpdate(traffic_vehs=traffic_vehs))
         for value in sur.ego_data.values():
             plot_ped_data[i].append([value.x, value.y])
@@ -162,6 +174,9 @@ if __name__ == "__main__":
             sur.ego_data[ped.id].history_y.append(ped.y)
             sur.ego_data[ped.id].history_u.append(ped.u)
             sur.ego_data[ped.id].history_phi.append(ped.phi)
+        # if i == 50:
+        #     sur.ego_data['ped0'].target_points = np.array([[8.0, 4.0, 1.70, 1],
+        #                                                    [7.9, 25.0, 1.80, 0]])
             # sur.del_participant(ped)
         traffic_vehs.clear()
         t2 = time.time()

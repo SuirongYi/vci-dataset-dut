@@ -43,7 +43,7 @@ class TrafficParticipant(TrafficVeh):
     original_phi_y: float = 0.0  # 目标点坐标系在大地坐标系下的y轴角度
     original_phi_x: float = 0.0  # 目标点坐标系在大地坐标系下的x轴角度
 
-    target_points: ndarray = np.array([[0.0, 0.0, 0.0]])  # 被控对象的目标点集,ref_x,ref_y,ref_v
+    target_points: ndarray = np.array([[0.0, 0.0, 0.0, 0.0]])  # 被控对象的目标点集,ref_x,ref_y,ref_v, inter(0/1)
     curr_index: int = 0  # 当前时刻的目标点在目标点集中的索引
     size: int = 0  # 目标点集的大小
     v: ndarray = np.array([0.0, 0.0])  # 大地坐标系下的速度
@@ -187,11 +187,6 @@ class Model:
             obj_x, obj_y, obj_phi = translate_and_rotate(r_next_x, r_next_y, next_phi, obj.geodetic_x, obj.geodetic_y,
                                                          obj.geodetic_phi)
             obj.history_a.append(obj.a_norm)
-            # if name == 'ped19':
-            #     print('sur_force', obj.r_sur_force)
-            #     print('veh_force', obj.r_veh_force)
-            #     print('self_force', obj.r_self_force)
-            # obj.reset()  # 修改
             objet_list.append(SurrInfo(id=name, x=obj_x, y=obj_y, u=np.linalg.norm(next_v), phi=obj_phi))
         return objet_list
 
