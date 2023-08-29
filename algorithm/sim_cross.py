@@ -17,7 +17,7 @@ length = 3.5
 
 @dataclass
 class SurrInit:
-    ped_data: Dict   # 初始化行人位置参数
+    ped_data: Dict  # 初始化行人位置参数
     para_list: List  # 社会力参数列表
 
 
@@ -39,11 +39,11 @@ class Surrounding:
         self.ego_data: Dict[str, TrafficParticipant] = dict()  # 被控行人字典
         self.ego_list = list(self.ego_veh.keys())
         for name in self.ego_list:
-            self.ego_data[name] = TrafficParticipant(**self.ego_veh[name], id=name,adjust_time=0.40, 
+            self.ego_data[name] = TrafficParticipant(**self.ego_veh[name], id=name, adjust_time=0.40,
                                                      view_radius=11.0, view_angle=2 * pi / 3,
                                                      A_sur=self.para_data[0], B_sur=self.para_data[1],
                                                      A_veh=self.para_data[2], B_veh=self.para_data[3],
-                                                     r_x_max=100, pre_horizon=1.5)                    # 被控对象初始化
+                                                     r_x_max=100, pre_horizon=1.5)  # 被控对象初始化
         self.model = Model(tau=0.1)
         self.all_object_result: SurrData = SurrData()
 
@@ -55,8 +55,8 @@ class Surrounding:
         self.traffic_info = copy.deepcopy(update.traffic_vehs)
         for obj in self.ego_data.values():
             obj.reset()
-            self.update_sur_veh(obj)    # 更新周围交通参与者
-            update_target_point(obj)    #todo 决策过程，待修改
+            self.update_sur_veh(obj)  # 更新周围交通参与者
+            update_target_point(obj)  # todo 决策过程，待修改
         self.model.control_object = self.ego_data
         self.all_object_result.ped = self.model.update()
 
@@ -140,44 +140,44 @@ def plot_vehicle(x, y, phi):
 
 if __name__ == "__main__":
     ped_data = dict(ped0_0=dict(original_x=15, original_y=3.0, phi=0.0, u=0.0,
-                              target_points=np.array([[8.0, 4.0, 1.70, 1]])),
+                                target_points=np.array([[8.0, 4.0, 1.70, 1]])),
                     ped1_0=dict(original_x=14, original_y=3.0, phi=0.0, u=0.0,
-                              target_points=np.array([[6.0, 4.0, 1.70, 1],
-                                                      [6.0, 25.0, 1.80, 0]])),
+                                target_points=np.array([[6.0, 4.0, 1.70, 1],
+                                                        [6.0, 25.0, 1.80, 0]])),
                     ped2_0=dict(original_x=13.5, original_y=3.0, phi=0.0, u=0.0,
-                              target_points=np.array([[6.5, 4.0, 1.70, 1],
-                                                      [6.5, 25.0, 1.80, 0]])),
+                                target_points=np.array([[6.5, 4.0, 1.70, 1],
+                                                        [6.5, 25.0, 1.80, 0]])),
                     ped3_0=dict(original_x=13, original_y=3.0, phi=0.0, u=0.0,
-                              target_points=np.array([[7.0, 4.0, 1.70, 1],
-                                                      [7.0, 25.0, 1.80, 0]])),
+                                target_points=np.array([[7.0, 4.0, 1.70, 1],
+                                                        [7.0, 25.0, 1.80, 0]])),
                     ped4_0=dict(original_x=13, original_y=2.5, phi=0.0, u=0.0,
-                              target_points=np.array([[7.5, 4.0, 1.70, 1],
-                                                      [7.5, 25.0, 1.80, 0]])),
+                                target_points=np.array([[7.5, 4.0, 1.70, 1],
+                                                        [7.5, 25.0, 1.80, 0]])),
                     ped0_1=dict(original_x=13.0, original_y=22.0, phi=0.0, u=0.0,
-                              target_points=np.array([[8.6, 20.0, 1.70, 1],
-                                                      [8.6, 4.0, 1.80, 0]])),
+                                target_points=np.array([[8.6, 20.0, 1.70, 1],
+                                                        [8.6, 4.0, 1.80, 0]])),
                     ped1_1=dict(original_x=13.0, original_y=23.0, phi=0.0, u=0.0,
-                              target_points=np.array([[8.1, 20.0, 1.70, 1],
-                                                      [8.1, 4.0, 1.80, 0]])),
+                                target_points=np.array([[8.1, 20.0, 1.70, 1],
+                                                        [8.1, 4.0, 1.80, 0]])),
                     ped2_1=dict(original_x=13.5, original_y=22.0, phi=0.0, u=0.0,
-                              target_points=np.array([[7.6, 20.0, 1.70, 1],
-                                                      [7.6, 4.0, 1.80, 0]])),
+                                target_points=np.array([[7.6, 20.0, 1.70, 1],
+                                                        [7.6, 4.0, 1.80, 0]])),
                     ped3_1=dict(original_x=13.0, original_y=21.0, phi=0.0, u=0.0,
-                              target_points=np.array([[7.1, 20.0, 1.70, 1],
-                                                      [7.1, 4.0, 1.80, 0]])),
+                                target_points=np.array([[7.1, 20.0, 1.70, 1],
+                                                        [7.1, 4.0, 1.80, 0]])),
                     ped4_1=dict(original_x=14.0, original_y=21.5, phi=0.0, u=0.0,
-                              target_points=np.array([[6.4, 20.0, 1.70, 1],
-                                                      [6.4, 4.0, 1.80, 0]])),
+                                target_points=np.array([[6.4, 20.0, 1.70, 1],
+                                                        [6.4, 4.0, 1.80, 0]])),
                     )
-                    # ped1=dict(x=0.0, y=0.0, phi=0.0, u=0.0))
+    # ped1=dict(x=0.0, y=0.0, phi=0.0, u=0.0))
     # _para = [0.85, 1.95, 3.50, 0.40]
-    simulation_step = 300
+    simulation_step = 250
     traffic_vehs = dict()
     sur_init = SurrInit(ped_data=ped_data, para_list=[6.50, 1.0, 3.50, 0.40])
     sur = Surrounding(init=sur_init)
     t = list()
     if_plot = True
-    plot_ped_data = {i: [] for i in range(simulation_step+1)}
+    plot_ped_data = {i: [] for i in range(simulation_step + 1)}
     for i in range(0, simulation_step + 1):
         # print(f'第{i}/{simulation_step + 1}')
         for n, p in sur.ego_data.items():
@@ -186,7 +186,7 @@ if __name__ == "__main__":
         t1 = time.time()
         if i == 59:
             sur.ego_data['ped0_0'].target_points = np.array([[7.1, 4.0, 1.70, 1],
-                                                           [7.1, 25.0, 1.80, 0]])
+                                                             [7.1, 25.0, 1.80, 0]])
             sur.ego_data['ped0_0'].size = 2
         sur_list = sur.update(update=SurrUpdate(traffic_vehs=traffic_vehs))
         for value in sur.ego_data.values():
@@ -202,7 +202,7 @@ if __name__ == "__main__":
         # if i == 50:
         #     sur.ego_data['ped0'].target_points = np.array([[8.0, 4.0, 1.70, 1],
         #                                                    [7.9, 25.0, 1.80, 0]])
-            # sur.del_participant(ped)
+        # sur.del_participant(ped)
         traffic_vehs.clear()
         t2 = time.time()
         t.append(t2 - t1)

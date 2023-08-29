@@ -232,6 +232,13 @@ def calculate_sur_force(obj: TrafficParticipant, tau):
         temp3 = a / np.linalg.norm(a, axis=1).reshape(number, 1)
         temp4 = b / np.linalg.norm(b, axis=1).reshape(number, 1)
         direction = -1 * (temp3 + temp4) / np.linalg.norm(temp3 + temp4, axis=1).reshape(number, 1)
+        for i in range(len(direction)):
+            vector1 = a[i]
+            vector2 = b[i]
+            theta = np.arccos(np.clip(vector1.dot(vector2)/(np.linalg.norm(vector1)*np.linalg.norm(vector2)), -1.0, 1.0))
+            print(theta)
+            if theta <= 0.05:
+                direction[i] = np.array([-direction[i][1], direction[i][0]])
         force = (obj.A_sur * np.exp(-obj.B_sur * (b_beta - 0.2))).reshape(number, 1) * direction * np.array(
             attention_list).reshape(number, 1)
         obj.update(r_sur_force=np.sum(force, axis=0))
