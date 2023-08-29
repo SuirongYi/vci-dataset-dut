@@ -232,7 +232,7 @@ def calculate_sur_force(obj: TrafficParticipant, tau):
         temp3 = a / np.linalg.norm(a, axis=1).reshape(number, 1)
         temp4 = b / np.linalg.norm(b, axis=1).reshape(number, 1)
         direction = -1 * (temp3 + temp4) / np.linalg.norm(temp3 + temp4, axis=1).reshape(number, 1)
-        force = (obj.A_sur * np.exp(-obj.B_sur * b_beta)).reshape(number, 1) * direction * np.array(
+        force = (obj.A_sur * np.exp(-obj.B_sur * (b_beta - 0.2))).reshape(number, 1) * direction * np.array(
             attention_list).reshape(number, 1)
         obj.update(r_sur_force=np.sum(force, axis=0))
 
