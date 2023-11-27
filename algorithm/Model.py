@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from math import cos, sin, exp, fabs, pi, copysign
 from numpy import ndarray
 from DataClass import TrafficVeh, SurrInfo
+import random
 
 
 class Region:
@@ -86,9 +87,9 @@ class TrafficParticipant(TrafficVeh):
 
     def __post_init__(self):
         if self.type == 'pedestrian':
-            self.u_max = 3.50
+            self.u_max = 3.00
             self.a_max = 3.00
-        elif self.type == 'bicycle':
+        else:
             self.u_max = 2.0
             self.a_max = 1.8
         self.x = self.original_x
@@ -96,7 +97,7 @@ class TrafficParticipant(TrafficVeh):
         self.size = self.target_points.shape[0]
         self.curr_index = 0
         self.target_point = self.target_points[self.curr_index][:2]
-        self.desired_u = self.target_points[self.curr_index][2]
+        self.desired_u = self.target_points[self.curr_index][2] + random.random() * 0.5
         temp = self.target_point - np.array([self.original_x, self.original_y])
         self.r_target = np.array([0.0, np.linalg.norm(temp)])  # 目标点在目标点坐标系下坐标
         self.original_phi_y = np.arctan2(temp[1], temp[0])
@@ -125,7 +126,7 @@ class TrafficParticipant(TrafficVeh):
     def reset_original_point(self, index):
         self.curr_index = index
         self.target_point = self.target_points[self.curr_index][:2]
-        self.desired_u = self.target_points[self.curr_index][2]
+        self.desired_u = self.target_points[self.curr_index][2] + random.random() * 0.5
         self.original_x = self.target_points[self.curr_index - 1][0]  # 目标点坐标系设为当前目标点的上一个目标点
         self.original_y = self.target_points[self.curr_index - 1][1]
         temp = self.target_point - np.array([self.original_x, self.original_y])
@@ -222,7 +223,7 @@ def calculate_sur_force(obj: TrafficParticipant, tau):
         ego_position = np.array([obj.r_x, obj.r_y])  # ego也是目标点坐标系下坐标
         curr_sur_position = mixed_state[:, :2]
         curr_sur_v = get_speed(mixed_state)
-        delta_position = curr_sur_v * tau
+        delta_position = curr_sur_v * tau * 2.0
         pre_sur_position = curr_sur_position + delta_position
         a = curr_sur_position - ego_position
         b = pre_sur_position - ego_position
@@ -236,8 +237,7 @@ def calculate_sur_force(obj: TrafficParticipant, tau):
             vector1 = a[i]
             vector2 = b[i]
             theta = np.arccos(np.clip(vector1.dot(vector2)/(np.linalg.norm(vector1)*np.linalg.norm(vector2)), -1.0, 1.0))
-            print(theta)
-            if theta <= 0.05:
+            if theta <= 0.1:
                 direction[i] = np.array([-direction[i][1], direction[i][0]])
         force = (obj.A_sur * np.exp(-obj.B_sur * (b_beta - 0.2))).reshape(number, 1) * direction * np.array(
             attention_list).reshape(number, 1)

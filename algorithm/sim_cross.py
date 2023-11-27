@@ -139,41 +139,52 @@ def plot_vehicle(x, y, phi):
 
 
 if __name__ == "__main__":
-    ped_data = dict(ped0_0=dict(original_x=15, original_y=3.0, phi=0.0, u=0.0,
-                                target_points=np.array([[8.0, 4.0, 1.70, 1]])),
-                    ped1_0=dict(original_x=14, original_y=3.0, phi=0.0, u=0.0,
-                                target_points=np.array([[6.0, 4.0, 1.70, 1],
-                                                        [6.0, 25.0, 1.80, 0]])),
-                    ped2_0=dict(original_x=13.5, original_y=3.0, phi=0.0, u=0.0,
-                                target_points=np.array([[6.5, 4.0, 1.70, 1],
-                                                        [6.5, 25.0, 1.80, 0]])),
-                    ped3_0=dict(original_x=13, original_y=3.0, phi=0.0, u=0.0,
-                                target_points=np.array([[7.0, 4.0, 1.70, 1],
-                                                        [7.0, 25.0, 1.80, 0]])),
-                    ped4_0=dict(original_x=13, original_y=2.5, phi=0.0, u=0.0,
-                                target_points=np.array([[7.5, 4.0, 1.70, 1],
-                                                        [7.5, 25.0, 1.80, 0]])),
-                    ped0_1=dict(original_x=13.0, original_y=22.0, phi=0.0, u=0.0,
-                                target_points=np.array([[8.6, 20.0, 1.70, 1],
-                                                        [8.6, 4.0, 1.80, 0]])),
-                    ped1_1=dict(original_x=13.0, original_y=23.0, phi=0.0, u=0.0,
-                                target_points=np.array([[8.1, 20.0, 1.70, 1],
-                                                        [8.1, 4.0, 1.80, 0]])),
-                    ped2_1=dict(original_x=13.5, original_y=22.0, phi=0.0, u=0.0,
-                                target_points=np.array([[7.6, 20.0, 1.70, 1],
-                                                        [7.6, 4.0, 1.80, 0]])),
-                    ped3_1=dict(original_x=13.0, original_y=21.0, phi=0.0, u=0.0,
-                                target_points=np.array([[7.1, 20.0, 1.70, 1],
-                                                        [7.1, 4.0, 1.80, 0]])),
-                    ped4_1=dict(original_x=14.0, original_y=21.5, phi=0.0, u=0.0,
-                                target_points=np.array([[6.4, 20.0, 1.70, 1],
-                                                        [6.4, 4.0, 1.80, 0]])),
+    ped_data = dict(ped0_0=dict(original_x=7.8, original_y=3.0, phi=0.0, u=0.0,
+                                target_points=np.array([[7.8, 21.0, 1.70, 1]])),
+                    ped1_0=dict(original_x=8.2, original_y=3.0, phi=0.0, u=0.0,
+                                target_points=np.array([[8.0, 21.0, 1.80, 0]])),
+                    ped2_0=dict(original_x=8.5, original_y=3.0, phi=0.0, u=0.0,
+                                target_points=np.array([[8.1, 21.0, 1.80, 0]])),
+                    ped3_0=dict(original_x=8.8, original_y=3.0, phi=0.0, u=0.0,
+                                target_points=np.array([[8.2, 21.0, 1.80, 0]])),
+                    ped4_0=dict(original_x=9.2, original_y=3.0, phi=0.0, u=0.0,
+                                target_points=np.array([[8.3, 21.0, 1.80, 0]])),
+                    ped5_0=dict(original_x=7.8, original_y=2.0, phi=0.0, u=0.0,
+                                target_points=np.array([[8.5, 21.0, 1.80, 0]])),
+                    ped6_0=dict(original_x=8.2, original_y=2.0, phi=0.0, u=0.0,
+                                target_points=np.array([[8.6, 21.0, 1.80, 0]])),
+                    ped7_0=dict(original_x=8.5, original_y=2.0, phi=0.0, u=0.0,
+                                target_points=np.array([[8.7, 21.0, 1.80, 0]])),
+                    ped8_0=dict(original_x=8.8, original_y=2.0, phi=0.0, u=0.0,
+                                target_points=np.array([[8.8, 21.0, 1.80, 0]])),
+                    ped9_0=dict(original_x=9.2, original_y=2.0, phi=0.0, u=0.0,
+                                target_points=np.array([[9.0, 21.0, 1.80, 0]])),
+                    ped0_1=dict(original_x=5.8, original_y=22.0, phi=0.0, u=0.0,
+                                target_points=np.array([[5.8, 4.0, 1.80, 0]])),
+                    ped1_1=dict(original_x=6.2, original_y=22.0, phi=0.0, u=0.0,
+                                target_points=np.array([[6.3, 4.0, 1.80, 0]])),
+                    ped2_1=dict(original_x=6.6, original_y=22.0, phi=0.0, u=0.0,
+                                target_points=np.array([[6.5, 4.0, 1.80, 0]])),
+                    ped3_1=dict(original_x=7.0, original_y=22.0, phi=0.0, u=0.0,
+                                target_points=np.array([[6.7, 4.0, 1.80, 0]])),
+                    ped4_1=dict(original_x=7.2, original_y=22.0, phi=0.0, u=0.0,
+                                target_points=np.array([[6.6, 4.0, 1.80, 0]])),
+                    ped5_1=dict(original_x=5.8, original_y=23.0, phi=0.0, u=0.0,
+                                target_points=np.array([[6.4, 4.0, 1.80, 0]])),
+                    ped6_1=dict(original_x=6.2, original_y=23.0, phi=0.0, u=0.0,
+                                target_points=np.array([[6.8, 4.0, 1.80, 0]])),
+                    ped7_1=dict(original_x=6.6, original_y=23.0, phi=0.0, u=0.0,
+                                target_points=np.array([[7.0, 4.0, 1.80, 0]])),
+                    ped8_1=dict(original_x=7.0, original_y=23.0, phi=0.0, u=0.0,
+                                target_points=np.array([[7.1, 4.0, 1.80, 0]])),
+                    ped9_1=dict(original_x=7.2, original_y=23.0, phi=0.0, u=0.0,
+                                target_points=np.array([[6.9, 4.0, 1.80, 0]])),
                     )
     # ped1=dict(x=0.0, y=0.0, phi=0.0, u=0.0))
     # _para = [0.85, 1.95, 3.50, 0.40]
-    simulation_step = 250
+    simulation_step = 200
     traffic_vehs = dict()
-    sur_init = SurrInit(ped_data=ped_data, para_list=[6.50, 1.0, 3.50, 0.40])
+    sur_init = SurrInit(ped_data=ped_data, para_list=[4.50, 1.0, 3.50, 0.40])
     sur = Surrounding(init=sur_init)
     t = list()
     if_plot = True
@@ -184,10 +195,11 @@ if __name__ == "__main__":
             traffic_vehs[n] = TrafficVeh(id=n, type='pedestrian', x=p.x, y=p.y, phi=p.phi,
                                          u=p.u)
         t1 = time.time()
-        if i == 59:
-            sur.ego_data['ped0_0'].target_points = np.array([[7.1, 4.0, 1.70, 1],
-                                                             [7.1, 25.0, 1.80, 0]])
-            sur.ego_data['ped0_0'].size = 2
+        # if i == 148:
+        #     sur.ego_data['ped0_0'].target_points = np.array([[8.0, 21.0, 1.70, 1],
+        #                                                      [10.0, 23.0, 1.80, 1],
+        #                                                      [18.0, 23.0, 1.70, 1]])
+        #     sur.ego_data['ped0_0'].size = 3
         sur_list = sur.update(update=SurrUpdate(traffic_vehs=traffic_vehs))
         for value in sur.ego_data.values():
             plot_ped_data[i].append([value.x, value.y])
@@ -220,6 +232,9 @@ if __name__ == "__main__":
                 r = patches.Rectangle((5.0, 5.0 + i * 1.0), 5.0, 0.55, linewidth=1, edgecolor='black', facecolor='grey',
                                       alpha=0.5, zorder=2)
                 ax.add_patch(r)
+                s = patches.Rectangle((10.0 + i * 1.0, 21.30), 0.55, 5.0, linewidth=1, edgecolor='black', facecolor='grey',
+                                      alpha=0.5, zorder=2)
+                ax.add_patch(s)
             # if i in list(plot_veh_data.keys()):
             #     for veh in plot_veh_data.get(i):
             #         plot_vehicle(veh[0], veh[1], veh[2])

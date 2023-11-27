@@ -6,7 +6,6 @@ import pandas as pd
 import math
 from scipy.stats import norm
 import matplotlib.pyplot as plt
-from fitter import Fitter
 
 path = os.path.dirname(os.path.abspath(__file__))
 path = os.path.dirname(path)
